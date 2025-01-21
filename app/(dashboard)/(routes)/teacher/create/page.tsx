@@ -4,6 +4,7 @@ import axios from "axios";
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { toast as hotToast} from "react-hot-toast";
 
 
 
@@ -45,6 +46,7 @@ const CreateCoursePage = () => {
         try {
             const {data} = await axios.post("/api/courses", values)
             router.push(`/teacher/courses/${data.id}`)
+            hotToast.success("Course Title Created Successfully")
         } catch (error) {
             console.log("[COURSE_CREATE]", error)
             toast({
