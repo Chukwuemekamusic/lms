@@ -6,6 +6,8 @@ import { LayoutDashboard } from "lucide-react";
 import { IconBadge } from "@/components/IconBadge";
 import FormTitle from "./_components/FormTitle";
 import FormDescription from "./_components/FormDescription";
+import GenericForm from "./_components/GenericForm";
+
 
 
 
@@ -72,6 +74,17 @@ const CoursePage = async ({params} : PageProps) => {
                     </div>
                     <FormTitle initialData={course} courseId={courseId} />
                     <FormDescription initialData={course} courseId={courseId} />
+                    <GenericForm 
+                        initialData={course}
+                        courseId={courseId}
+                        fieldConfig={{
+                            name: "description",
+                            label: "Course description",
+                            placeholder: "add a description",
+                            type: "textarea" as const,
+                            minLength: 2
+                          }}
+                    />
                 </div>
             </div>
         </div>
