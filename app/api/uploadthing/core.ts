@@ -22,6 +22,9 @@ export const ourFileRouter = {
     // Set permissions and file types for this FileRoute
     .middleware(async () => await handleAuth())
     .onUploadComplete(() => {}),
+    // .onUploadComplete(async({metadata, file}) => {
+    //     return {uploadedBy: metadata.userId, url: file.url}
+    // }),
   courseAttachment: f(["text", "image", "video", "audio", "pdf"])
     .middleware(async () => await handleAuth())
     .onUploadComplete(() => {}),

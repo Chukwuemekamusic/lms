@@ -1,16 +1,14 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/db";
 import { redirect } from "next/navigation";
-import CourseProgress from "@/app/(dashboard)/_components/CourseProgress";
 import { LayoutDashboard } from "lucide-react";
 import { IconBadge } from "@/components/IconBadge";
 import FormTitle from "./_components/FormTitle";
 import FormDescription from "./_components/FormDescription";
 import GenericForm from "./_components/GenericForm";
-
-
-
-
+import FormImage from "./_components/FormImage";
+import { truncateUrl } from "@/lib/tools";
+// import CourseProgress from "@/app/(dashboard)/_components/CourseProgress";
 
 
 interface PageProps {
@@ -74,6 +72,7 @@ const CoursePage = async ({params} : PageProps) => {
                     </div>
                     <FormTitle initialData={course} courseId={courseId} />
                     <FormDescription initialData={course} courseId={courseId} />
+                    <FormImage initialData={course} courseId={courseId} />
                     <GenericForm 
                         initialData={course}
                         courseId={courseId}

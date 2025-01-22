@@ -21,30 +21,30 @@ import { cn } from "@/lib/utils"
 import { Course } from "@prisma/client"
 
 interface FormFieldConfig {
-  name: string;
+  name: keyof Course;
   label: string;
   placeholder: string;
   type: "input" | "textarea";
   minLength?: number;
 }
 
-// type GenericFormProps<T extends { [key: string]: any }> = {
-//   initialData: Course;
-//   courseId: string;
-//   fieldConfig: FormFieldConfig;
-// }
-
-type GenericFormProps<T extends { [key: string]: any }> = {
-  initialData: T;
+type GenericFormProps = {
+  initialData: Course;
   courseId: string;
   fieldConfig: FormFieldConfig;
 }
 
-const GenericForm = <T extends { [key: string]: any }>({ 
+// type GenericFormProps<T extends { [key: string]: any }> = {
+//   initialData: T;
+//   courseId: string;
+//   fieldConfig: FormFieldConfig;
+// }
+
+const GenericForm = ({ 
   initialData, 
   courseId, 
   fieldConfig 
-}: GenericFormProps<T>) => {
+}: GenericFormProps) => {
     const formSchema = z.object({
       [fieldConfig.name]: z.string().min(fieldConfig.minLength || 2, {
         message: `${fieldConfig.label} is required.`,
@@ -54,7 +54,7 @@ const GenericForm = <T extends { [key: string]: any }>({
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            [fieldConfig.name]: initialData[fieldConfig.name] || "",
+            [fieldConfig.name]: initialData[fieldConfig.name as keyof Course] as string|| "",
         },
     })
     
@@ -66,7 +66,7 @@ const GenericForm = <T extends { [key: string]: any }>({
     
     const onSubmit = async(values: z.infer<typeof formSchema>) => {
         // ensure it updates only when the field is changed. if values remains same, no need to update
-        if (values[fieldConfig.name].trim() === initialData[fieldConfig.name].trim()) {
+        if (values[fieldConfig.name].trim() as string === initialData[fieldConfig.name] as string) {
             toggleEdit()
             toast.success("No changes made")
             return
@@ -83,7 +83,7 @@ const GenericForm = <T extends { [key: string]: any }>({
 
     const handleCancel = () => {
         form.reset({
-            [fieldConfig.name]: initialData[fieldConfig.name] || "",
+            [fieldConfig.name]: initialData[fieldConfig.name] as string || "",
         })
         toggleEdit()
     }
@@ -113,7 +113,7 @@ const GenericForm = <T extends { [key: string]: any }>({
                 "text-sm mt-2",
                 !initialData[fieldConfig.name] && "text-muted-foreground italic"
               )}>
-                {initialData[fieldConfig.name] || `No ${fieldConfig.name}`}
+                {initialData[fieldConfig.name] as string || `No ${fieldConfig.name}`}
               </p>
             )}
             {isEditing && (
