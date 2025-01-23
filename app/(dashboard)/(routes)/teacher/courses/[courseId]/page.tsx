@@ -10,6 +10,7 @@ import FormImage from "./_components/FormImage";
 import FormCategory from "./_components/FormCategory";
 import FormPrice from "./_components/FormPrice";
 import FormAttachment from "./_components/FormAttachment";
+import FormChapter from "./_components/FormChapter";
 
 
 interface PageProps {
@@ -37,7 +38,16 @@ const CoursePage = async ({params} : PageProps) => {
             userId: userId
         },
         include: {
-            attachments: true
+            attachments: {
+                orderBy: {
+                    createdAt: "desc",
+                },
+            },
+            chapters: {
+                orderBy: {
+                    position: "asc",
+                },
+            }
         }
     })
     // get categories from db
@@ -58,6 +68,7 @@ const CoursePage = async ({params} : PageProps) => {
         course.imageUrl,
         course.price,
         course.categoryId,
+        course.chapters.some(chapter => chapter.isPublished)
     ]
 
     const totalFields = requiredFields.length
@@ -73,9 +84,7 @@ const CoursePage = async ({params} : PageProps) => {
                         Complete all fields {completionText}
                     </span>
                 </div>
-                {/* <CourseProgress
-                    value={completedFields / totalFields}
-                /> */}
+                
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-x-7 mt-16">
                 <div className="">
@@ -100,9 +109,9 @@ const CoursePage = async ({params} : PageProps) => {
                             <h2 className="text-xl">Course chapters</h2>
                         </div>
                         <div className="">
-                            TODO: CHAPTERS
+                            <FormChapter initialData={course} courseId={courseId} />
                         </div>
-                        <div className="flex items-center gap-x-2">
+                        <div className="flex items-center gap-x-2 mt-6">
                             <IconBadge icon={CircleDollarSign}  />
                             <h2 className="text-xl">Sell your course</h2>
                         </div>

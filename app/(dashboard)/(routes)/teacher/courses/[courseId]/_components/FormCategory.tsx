@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { Pencil, X } from "lucide-react"
+import { Pencil, X, Loader2 } from "lucide-react"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -116,7 +116,7 @@ const FormCategory= ({initialData, courseId, options}: FormCategoryProps) => {
                                 </Button>
                            
                             <Button disabled={!isValid || isSubmitting} type="submit">
-                                Continue
+                                {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : "Continue"}
                             </Button>
                         </div>
                     </form>
