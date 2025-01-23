@@ -73,7 +73,7 @@ const GenericForm = <T extends { [key: string]: any }>({
         }
         try {
             await axios.patch(`/api/courses/${courseId}`, values)
-            toast.success("Course updated")
+            toast.success(`Course ${fieldConfig.label} updated`)
             toggleEdit()
             router.refresh()
         } catch (error) {
@@ -93,7 +93,7 @@ const GenericForm = <T extends { [key: string]: any }>({
     return (
         <div className="mt-6 border bg-zinc-100 rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                {fieldConfig.label}
+                <h2 className="text-lg font-bold">{fieldConfig.label}</h2>
                 <Button onClick={isEditing ? handleCancel : toggleEdit} variant="ghost">
                     {isEditing ? (
                         <>

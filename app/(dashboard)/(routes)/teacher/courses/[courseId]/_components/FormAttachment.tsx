@@ -10,18 +10,20 @@ import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast"
 import axios from "axios"
 import { cn } from "@/lib/utils"
-import { Course } from "@prisma/client"
+import { Course, Attachment } from "@prisma/client"
 import Image from "next/image"
 import FileUpload from "@/components/FileUpload"
 
 
-type FormImageProps = {
-    initialData: Course
+type FormAttachmentProps = {
+    initialData: Course & {
+        attachments: Attachment[]
+    }
     courseId: string
 }
 
 
-const FormImage= ({initialData, courseId}: FormImageProps) => {
+const FormAttachment= ({initialData, courseId}: FormAttachmentProps) => {
 
     const [copySuccess, setCopySuccess] = useState("");
 
@@ -38,9 +40,7 @@ const FormImage= ({initialData, courseId}: FormImageProps) => {
 
 
     const formSchema = z.object({
-        imageUrl: z.string().min(2, {
-          message: "image is required.",
-        }),
+        url: z.string().min(2),
       })
     
     const router = useRouter()
@@ -51,12 +51,12 @@ const FormImage= ({initialData, courseId}: FormImageProps) => {
     }
     const onSubmit = async(values: z.infer<typeof formSchema>) => {
         try {
-            await axios.patch(`/api/courses/${courseId}`, values)
-            toast.success("Course updated")
+            await axios.post(`/api/courses/${courseId}/attachments`, values)
+            toast.success("Course attachments updated")
             toggleEdit()
             router.refresh()
         } catch (error) {
-            toast.error("Failed to update course")
+            toast.error("Failed to update course attachments")
         }
     }
 
@@ -64,11 +64,11 @@ const FormImage= ({initialData, courseId}: FormImageProps) => {
         // handle the cancel function
         toggleEdit()
     }
-
+    const hasAttachments = initialData.attachments.length > 0
     return (
         <div className="mt-6 border bg-zinc-100 rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                <h2 className="text-lg font-bold">Course image</h2>
+                <h2 className="text-lg font-bold">Course attachments</h2>
                 <Button onClick={isEditing ? handleCancel : toggleEdit} variant="ghost">
                     {isEditing && (
                         <>
@@ -76,55 +76,39 @@ const FormImage= ({initialData, courseId}: FormImageProps) => {
                             Cancel
                         </>
                     )}
-                    {!isEditing && !initialData.imageUrl && (
+                    {!isEditing && (
                         <>
                             <PlusCircle className="h-4 w-4 mr-2" />
-                            Add an image
+                            Add an attachment
                         </>
                     )}
-                    {!isEditing && initialData.imageUrl && (
-                        <>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit image
-                        </>
-                    )}
+                    
                 </Button>
             </div>
-            {!isEditing &&
-             <p className={cn("text-sm mt-2 flex justify-between items-center", !initialData.imageUrl && "text-muted-foreground italic", initialData.imageUrl && "bg-blue-50 rounded-md p-2")}>
-                {truncateUrl(initialData.imageUrl || "No image")}
-                {initialData.imageUrl && <Button onClick={handleCopy} variant="outline" className={cn("ml-2", copySuccess && "bg-green-500 text-white hover:bg-green-500 hover:text-white")}>
-                            {copySuccess ? "Copied!" : <Copy className="h-4 w-4 " />}
-                </Button>}
-            </p>}
-            {!isEditing && (
-                !initialData.imageUrl ? (
-                    <div className="flex items-center justify-center h-60 w-full my-4 bg-zinc-200 rounded-md">
-                        <ImageIcon className="h-10 w-10 text-muted-foreground" />
-                    </div>
-                ) : (
-                    <div className="relative aspect-video mt-2 h-40 w-full">
-                        <Image
-                        fill
-                        className="object-cover rounded-md"
-                        src={initialData.imageUrl}
-                        alt="Course image"
-                        />
-                    </div>
-                )
+            {!isEditing && !hasAttachments && (
+                <p className={"text-sm mt-2 flex justify-between items-center"}>
+                    No attachments
+                </p>
+            )}
+            {!isEditing && hasAttachments && (
+                <div className="mt-2 gap-y-2">
+                    {initialData.attachments.map((attachment) => (
+                        <p key={attachment.id} className="text-sm">{attachment.name}</p>
+                    ))}
+                </div>
             )}
             {isEditing && (
                 <div className=" mt-4">
                     <FileUpload
-                        endpoint="courseImage"
+                        endpoint="courseAttachment"
                         onChange={async (url) => {
                             if (url) {
-                                await onSubmit({imageUrl: url})
+                                await onSubmit({url: url})
                             }
                         }}
                     />
                     <div className="text-xs text-muted-foreground text-center mt-6">
-                        16:9 aspect ratio recommended
+                        Upload any relevant files for your course. 
                     </div>
                 </div>
             )}
@@ -133,4 +117,4 @@ const FormImage= ({initialData, courseId}: FormImageProps) => {
     )
 }
 
-export default FormImage
+export default FormAttachment

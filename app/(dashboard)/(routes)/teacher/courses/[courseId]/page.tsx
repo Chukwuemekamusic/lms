@@ -1,14 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/db";
 import { redirect } from "next/navigation";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, ListCheck, CircleDollarSign } from "lucide-react";
 import { IconBadge } from "@/components/IconBadge";
 import FormTitle from "./_components/FormTitle";
 import FormDescription from "./_components/FormDescription";
 import GenericForm from "./_components/GenericForm";
 import FormImage from "./_components/FormImage";
-import { truncateUrl } from "@/lib/tools";
-// import CourseProgress from "@/app/(dashboard)/_components/CourseProgress";
+import FormCategory from "./_components/FormCategory";
+import FormPrice from "./_components/FormPrice";
+import FormAttachment from "./_components/FormAttachment";
 
 
 interface PageProps {
@@ -28,12 +29,24 @@ const CoursePage = async ({params} : PageProps) => {
         return redirect("/teacher/courses")
     }
     console.log("courseId", courseId)
+
+    // get course from db and include attachments
     const course = await prisma.course.findUnique({
         where: {
             id: courseId,
             userId: userId
+        },
+        include: {
+            attachments: true
         }
     })
+    // get categories from db
+    const categories = await prisma.category.findMany({
+        orderBy: {
+            name: "asc"
+        }
+    })
+    
 
     if (!course) {
         return redirect("/teacher/courses")
@@ -64,7 +77,7 @@ const CoursePage = async ({params} : PageProps) => {
                     value={completedFields / totalFields}
                 /> */}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-x-7 mt-16">
                 <div className="">
                     <div className="flex items-center gap-x-2">
                         <IconBadge icon={LayoutDashboard} variant="default" />
@@ -73,7 +86,38 @@ const CoursePage = async ({params} : PageProps) => {
                     <FormTitle initialData={course} courseId={courseId} />
                     <FormDescription initialData={course} courseId={courseId} />
                     <FormImage initialData={course} courseId={courseId} />
-                    <GenericForm 
+                    <FormCategory initialData={course} courseId={courseId} options={categories.map(category => (
+                        {
+                            label: category.name,
+                            value: category.id
+                        }
+                    ))} />
+                </div>
+                <div className="space-y-6">
+                    <div className="">
+                        <div className="flex items-center gap-x-2">
+                            <IconBadge icon={ListCheck} />
+                            <h2 className="text-xl">Course chapters</h2>
+                        </div>
+                        <div className="">
+                            TODO: CHAPTERS
+                        </div>
+                        <div className="flex items-center gap-x-2">
+                            <IconBadge icon={CircleDollarSign}  />
+                            <h2 className="text-xl">Sell your course</h2>
+                        </div>
+                        <FormPrice initialData={course} courseId={courseId} />
+                        <FormAttachment initialData={course} courseId={courseId} />
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default CoursePage
+
+{/* <GenericForm 
                         initialData={course}
                         courseId={courseId}
                         fieldConfig={{
@@ -83,11 +127,4 @@ const CoursePage = async ({params} : PageProps) => {
                             type: "textarea" as const,
                             minLength: 2
                           }}
-                    />
-                </div>
-            </div>
-        </div>
-    )
-}
-
-export default CoursePage
+                    /> */}

@@ -76,7 +76,7 @@ const FormTitle = ({initialData, courseId}: FormTitleProps) => {
     return (
         <div className="mt-6 border bg-zinc-100 rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                Course title
+                <h2 className="text-lg font-bold">Course title</h2>
                 <Button onClick={isEditing ? handleCancel : toggleEdit} variant="ghost">
                     {isEditing ? (
                         <>

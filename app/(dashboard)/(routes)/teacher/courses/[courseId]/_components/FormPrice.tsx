@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { Pencil, X } from "lucide-react"
+import { Pencil, X, PoundSterling } from "lucide-react"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -14,32 +14,30 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form"
-import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast"
 import axios from "axios"
 import { cn } from "@/lib/utils"
+import { Course } from "@prisma/client"
+import { formatPrice } from "@/lib/tools"
 
-type FormDescriptionProps = {
-    initialData: {
-        description: string | null
-    }
+type FormPriceProps = {
+    initialData: Course
     courseId: string
 }
 
 
-const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
+const FormPrice= ({initialData, courseId}: FormPriceProps) => {
     const formSchema = z.object({
-        description: z.string().min(2, {
-          message: "Description is required.",
-        }),
+        price: z.coerce.number(),
       })
     
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            description: initialData.description || "",
+            price: initialData?.price || undefined,
         },
     })
     const {isSubmitting, isValid} = form.formState
@@ -52,7 +50,7 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
     const onSubmit = async(values: z.infer<typeof formSchema>) => {
         try {
             await axios.patch(`/api/courses/${courseId}`, values)
-            toast.success("Course updated")
+            toast.success("Course price updated")
             toggleEdit()
             router.refresh()
         } catch (error) {
@@ -60,10 +58,12 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
         }
     }
 
+    const priceValue = initialData.price ? formatPrice(initialData.price) : "No price"
+
     return (
         <div className="mt-6 border bg-zinc-100 rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                <h2 className="text-lg font-bold">Course description</h2>
+                <h2 className="text-lg font-bold flex items-center"><PoundSterling className="h-4 w-4 mr-2 text-customBlue font-bold" />Course price</h2>
                 <Button onClick={toggleEdit} variant="ghost">
                     {isEditing ? (
                         <>
@@ -79,8 +79,8 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
                 </Button>
             </div>
             {!isEditing &&
-             <p className={cn("text-sm mt-2", !initialData.description && "text-muted-foreground italic")}>
-                {initialData.description || "No description"}
+             <p className={cn("text-sm mt-2", !initialData.price && "text-muted-foreground italic")}>
+                {priceValue}
             </p>}
             {isEditing && (
                 <Form {...form}>
@@ -89,15 +89,17 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
                         className="space-y-8 mt-8">
                         <FormField
                         control={form.control}
-                        name="description"
+                        name="price"
                         render={({ field }) => (
                             <FormItem>
                             <FormControl>
-                                <Textarea
+                                <Input
                                 disabled={isSubmitting}
-                                placeholder="add a description" 
+                                placeholder="add a price" 
                                 {...field} 
                                 className="bg-white"
+                                type="number"
+                                step="0.01"
                                 />
                             </FormControl>
                             <FormMessage />
@@ -122,4 +124,4 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
     )
 }
 
-export default FormDescription
+export default FormPrice

@@ -11,17 +11,17 @@ interface FileUploadProps {
 
 export default function FileUpload({onChange, endpoint}: FileUploadProps) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <div className="flex flex-col items-center justify-between p-6 bg-white">
       <UploadDropzone
         endpoint={endpoint}
         onClientUploadComplete={(res) => {
           onChange(res?.[0].url);
-          toast.success("Upload Completed");
+          // toast.success("Upload Completed");
         }}
         onUploadError={(error: Error) => {
           toast.error(`ERROR! ${error?.message}`);
         }}
       />
-    </main>
+    </div>
   );
 }

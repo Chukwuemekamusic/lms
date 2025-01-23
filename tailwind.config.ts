@@ -11,6 +11,7 @@ export default withUt({
   theme: {
   	extend: {
   		colors: {
+			customBlue: '#0369A1',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

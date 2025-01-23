@@ -20,18 +20,22 @@ import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast"
 import axios from "axios"
 import { cn } from "@/lib/utils"
+import { Course } from "@prisma/client"
+import { Combobox } from "@/components/ui/combobox"
 
-type FormDescriptionProps = {
-    initialData: {
-        description: string | null
-    }
+type FormCategoryProps = {
+    initialData: Course
     courseId: string
+    options:{
+        label: string
+        value: string
+    }[]
 }
 
 
-const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
+const FormCategory= ({initialData, courseId, options}: FormCategoryProps) => {
     const formSchema = z.object({
-        description: z.string().min(2, {
+        categoryId: z.string().min(1, {
           message: "Description is required.",
         }),
       })
@@ -39,7 +43,7 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            description: initialData.description || "",
+            categoryId: initialData.categoryId || "",
         },
     })
     const {isSubmitting, isValid} = form.formState
@@ -59,11 +63,12 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
             toast.error("Failed to update course")
         }
     }
+    const selectedOption = options.find((option) => option.value === initialData.categoryId)
 
     return (
         <div className="mt-6 border bg-zinc-100 rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                <h2 className="text-lg font-bold">Course description</h2>
+                <h2 className="text-lg font-bold">Course category</h2>
                 <Button onClick={toggleEdit} variant="ghost">
                     {isEditing ? (
                         <>
@@ -79,9 +84,10 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
                 </Button>
             </div>
             {!isEditing &&
-             <p className={cn("text-sm mt-2", !initialData.description && "text-muted-foreground italic")}>
-                {initialData.description || "No description"}
-            </p>}
+             <p className={cn("text-sm mt-2", !initialData.categoryId && "text-muted-foreground italic")}>
+                {selectedOption?.label || "No description"}
+            </p>
+            }
             {isEditing && (
                 <Form {...form}>
                     <form 
@@ -89,16 +95,15 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
                         className="space-y-8 mt-8">
                         <FormField
                         control={form.control}
-                        name="description"
+                        name="categoryId"
                         render={({ field }) => (
                             <FormItem>
                             <FormControl>
-                                <Textarea
-                                disabled={isSubmitting}
-                                placeholder="add a description" 
-                                {...field} 
-                                className="bg-white"
+                                <Combobox
+                                options={options}
+                                {...field}
                                 />
+
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -122,4 +127,4 @@ const FormDescription= ({initialData, courseId}: FormDescriptionProps) => {
     )
 }
 
-export default FormDescription
+export default FormCategory
