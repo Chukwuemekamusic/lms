@@ -2,11 +2,10 @@ import { auth } from "@clerk/nextjs/server"
 import prisma from "@/lib/db"
 import { NextResponse } from "next/server"
 
-export async function POST(req: Request, {params}: {params: {courseId: string}}) {
+export async function DELETE(req: Request, { params }: { params: { courseId: string, attachmentId: string } }) {
     try {
-        const {courseId} = await params
+        const {courseId, attachmentId} = await params
         const {userId} = await auth()
-        const {url, name} = await req.json();
 
         if (!userId) {
             console.log("User ID is required")
@@ -24,30 +23,16 @@ export async function POST(req: Request, {params}: {params: {courseId: string}})
             return new NextResponse("Unauthorized", {status: 401})
         }
 
-        if (!url) {
+        if (!attachmentId) {
             return new NextResponse("No valid data provided", {status: 400})
         }
 
-    
-        const course = await prisma.course.findUnique({
-            where: {id: courseId, userId: userId}
+        const attachment = await prisma.attachment.delete({
+            where: {id: attachmentId, courseId: courseId}
         })
-        if (!course) {
-            return new NextResponse("Course not found", {status: 404})
-        }
-
-        const attachment = await prisma.attachment.create({
-            data: {
-                url, 
-                name,
-                courseId
-            }
-        })
-
-        return NextResponse.json(attachment)
-
+        return new NextResponse("Attachment deleted", {status: 200})
     } catch (error) {
-        console.log("[COURSE_ID_PATCH]", error)
-        return new NextResponse("Internal Error", {status: 500})
+        console.log("Attachment delete error", error)
+        return new NextResponse("Internal error", {status: 500})
     }
 }

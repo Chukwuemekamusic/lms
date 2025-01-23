@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { ImageIcon, Pencil, PlusCircle, X, Copy } from "lucide-react"
+import { ImageIcon, Pencil, PlusCircle, X,File, Trash2, Loader2 } from "lucide-react"
 import { truncateUrl } from "@/lib/tools"
 import { z } from "zod"
  
@@ -12,7 +12,7 @@ import axios from "axios"
 import { cn } from "@/lib/utils"
 import { Course, Attachment } from "@prisma/client"
 import Image from "next/image"
-import FileUpload from "@/components/FileUpload"
+import FileUpload, { AttachmentUpload } from "@/components/FileUpload"
 
 
 type FormAttachmentProps = {
@@ -25,26 +25,14 @@ type FormAttachmentProps = {
 
 const FormAttachment= ({initialData, courseId}: FormAttachmentProps) => {
 
-    const [copySuccess, setCopySuccess] = useState("");
-
-    const handleCopy = () => {
-        navigator.clipboard.writeText(initialData.imageUrl || "")
-            .then(() => {
-                setCopySuccess("Copied to clipboard!");
-                setTimeout(() => setCopySuccess(""), 2000); // Clear message after 2 seconds
-            })
-            .catch(err => {
-                console.error("Failed to copy: ", err);
-            });
-    };
-
-
     const formSchema = z.object({
+        name: z.string().min(2),
         url: z.string().min(2),
       })
     
     const router = useRouter()
     const [isEditing, setIsEditing] = useState(false)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
 
     const toggleEdit = () => {
         setIsEditing(prev => !prev)
@@ -57,6 +45,20 @@ const FormAttachment= ({initialData, courseId}: FormAttachmentProps) => {
             router.refresh()
         } catch (error) {
             toast.error("Failed to update course attachments")
+        }
+    }
+
+    const handleDelete = async(attachmentId: string) => {
+        // TODO: delete attachment from uploadthings
+        try {
+            setDeletingId(attachmentId)
+            await axios.delete(`/api/courses/${courseId}/attachments/${attachmentId}`)
+            toast.success("Attachment deleted")
+            router.refresh()
+        } catch (error) {
+            toast.error("Failed to delete attachment")
+        } finally {
+            setDeletingId(null)
         }
     }
 
@@ -93,17 +95,32 @@ const FormAttachment= ({initialData, courseId}: FormAttachmentProps) => {
             {!isEditing && hasAttachments && (
                 <div className="mt-2 gap-y-2">
                     {initialData.attachments.map((attachment) => (
-                        <p key={attachment.id} className="text-sm">{attachment.name}</p>
+                        <div key={attachment.id} className="flex items-center p-3 w-full text-sky-700 bg-sky-100 border border-sky-200 rounded-md justify-between">
+                            <div className="flex items-center">
+                                <File className="h-4 w-4 mr-2 flex-shrink-0" />
+                                <p className="text-sm line-clamp-1">{attachment.name}</p>
+                            </div>
+                            {deletingId === attachment.id && (
+                                <div className="flex items-center">
+                                    <Loader2 className="h-4 w-4 mr-2 flex-shrink-0 animate-spin" />
+                                </div>
+                            )}
+                            {deletingId !== attachment.id && (
+                            <div onClick={() => handleDelete(attachment.id)} className="flex items-center">
+                                <Trash2 className="h-4 w-4 mr-2 flex-shrink-0" />
+                            </div>
+                            )}
+                        </div>
                     ))}
                 </div>
             )}
             {isEditing && (
                 <div className=" mt-4">
-                    <FileUpload
+                    <AttachmentUpload
                         endpoint="courseAttachment"
-                        onChange={async (url) => {
-                            if (url) {
-                                await onSubmit({url: url})
+                        onChange={async (data) => {
+                            if (data) {
+                                await onSubmit(data)
                             }
                         }}
                     />

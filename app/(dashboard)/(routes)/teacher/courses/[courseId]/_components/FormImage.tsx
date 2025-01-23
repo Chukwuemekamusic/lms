@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { ImageIcon, Pencil, PlusCircle, X, Copy } from "lucide-react"
+import { ImageIcon, Pencil, PlusCircle, X, Copy, Check } from "lucide-react"
 import { truncateUrl } from "@/lib/tools"
 import { z } from "zod"
  
@@ -29,7 +29,7 @@ const FormImage= ({initialData, courseId}: FormImageProps) => {
         navigator.clipboard.writeText(initialData.imageUrl || "")
             .then(() => {
                 setCopySuccess("Copied to clipboard!");
-                setTimeout(() => setCopySuccess(""), 2000); // Clear message after 2 seconds
+                setTimeout(() => setCopySuccess(""), 1500); // Clear message after 1.5 seconds
             })
             .catch(err => {
                 console.error("Failed to copy: ", err);
@@ -93,8 +93,8 @@ const FormImage= ({initialData, courseId}: FormImageProps) => {
             {!isEditing &&
              <p className={cn("text-sm mt-2 flex justify-between items-center", !initialData.imageUrl && "text-muted-foreground italic", initialData.imageUrl && "bg-blue-50 rounded-md p-2")}>
                 {truncateUrl(initialData.imageUrl || "No image")}
-                {initialData.imageUrl && <Button onClick={handleCopy} variant="outline" className={cn("ml-2", copySuccess && "bg-green-500 text-white hover:bg-green-500 hover:text-white")}>
-                            {copySuccess ? "Copied!" : <Copy className="h-4 w-4 " />}
+                {initialData.imageUrl && <Button onClick={handleCopy} variant="outline" className={cn("ml-2", copySuccess && "bg-green-300 text-white hover:bg-green-300 hover:text-white")}>
+                            {copySuccess ? <Check className="h-4 w-4 " /> : <Copy className="h-4 w-4 " />}
                 </Button>}
             </p>}
             {!isEditing && (
